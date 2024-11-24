@@ -14,6 +14,10 @@ include(${CMAKE_MODULE_PATH}/utils/debugging.cmake)
 # Configure main executable
 print_header("Configuring Project ${PROJECT_NAME}")
 # Create an executable target from the source files
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/func.cpp)
+target_include_directories(${PROJECT_NAME} PUBLIC include)
 # Set any additional compiler flags if needed
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+
+include(${CMAKE_MODULE_PATH}/pkgs/eigen3_install.cmake)
+target_link_libraries(${PROJECT_NAME} PRIVATE Eigen3::Eigen)
