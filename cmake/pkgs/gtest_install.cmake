@@ -1,8 +1,8 @@
-set(GTEST_VERSION "1.13.0" CACHE STRING "GoogleTest Version to Install (Branch/Tag/Release)")
+set(GTEST_VERSION "1.15.2" CACHE STRING "GoogleTest Version to Install (Branch/Tag/Release)")
 
 include(${CMAKE_MODULE_PATH}/utils/debugging.cmake)
 
-print_header("Configuring GoogleTest Library version: ${EIGEN_VERSION}")
+print_header("Configuring GoogleTest Library version: ${GTEST_VERSION}")
 
 find_package(GTest ${GTEST_VERSION} NO_MODULE)
 
@@ -15,7 +15,7 @@ if (NOT GTest_FOUND)
 	include(FetchContent)
 	FetchContent_Declare(
 		googletest
-		URL "https:://github.com/google/googletest/archive/refs/tags/v${GTEST_VERSION}.tar.gz"
+		URL "https://github.com/google/googletest/releases/download/v${GTEST_VERSION}/googletest-${GTEST_VERSION}.tar.gz"
 	)
 	FetchContent_MakeAvailable(googletest)
 	add_library(GTest::gtest ALIAS gtest)
