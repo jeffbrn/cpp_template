@@ -15,7 +15,7 @@ if (NOT Eigen3_FOUND)
 	include(FetchContent)
 	FetchContent_Declare(
 		eigen3
-		URL "https:://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VERSION}/eigen-${EIGEN_VERSION}.tar.gz"
+		URL "https://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VERSION}/eigen-${EIGEN_VERSION}.tar.gz"
 	)
 	FetchContent_MakeAvailable(eigen3)
 	add_library(Eigen3::Eigen ALIAS eigen)
