@@ -1,0 +1,11 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update && apt upgrade -y
+RUN apt install -y apt-utils
+RUN apt install -y build-essential cmake gdb
+RUN apt install -y valgrind
+RUN apt install -y git
+
+ENTRYPOINT [ "tail", "-f", "/dev/null" ]

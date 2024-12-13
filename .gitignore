@@ -3,3 +3,6 @@ build/
 
 # Editor files
 .vscode/
+
+# misc
+.devcontainer/.env

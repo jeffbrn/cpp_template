@@ -1,0 +1,20 @@
+services:
+    cpp-dev-env:
+        user: ${USER}
+        container_name: cpp-user-dev
+        image: cpp-user-dev_img
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                USERNAME: ${USER}
+                ARG_UID: ${USER_UID}
+                ARG_GID: ${USER_GID}
+        network_mode: "host"
+        volumes:
+            - ..:/workspace
+            - ${HOME}/.ssh:/home/${USER}/.ssh:ro
+            - ${HOME}/.gitconfig:/home/${USER}/.gitconfig:ro
+        command: tail -f /dev/null
+
+# docker exec -it -u ${USER} --workdir /workspace NAME /bin/bash

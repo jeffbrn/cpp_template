@@ -16,6 +16,7 @@ if (NOT GTest_FOUND)
 	FetchContent_Declare(
 		googletest
 		URL "https://github.com/google/googletest/releases/download/v${GTEST_VERSION}/googletest-${GTEST_VERSION}.tar.gz"
+		DOWNLOAD_EXTRACT_TIMESTAMP true
 	)
 	FetchContent_MakeAvailable(googletest)
 	add_library(GTest::gtest ALIAS gtest)
