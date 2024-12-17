@@ -12,8 +12,11 @@ public:
 
 	size_t send(const uint8_t* send_msg, size_t msg_len, uint8_t* recv_msg, size_t max_rcv_msg_len);
 
+	bool is_valid() const { return _valid; }
+
 private:
-	int _skt_fd = 1;
+	bool _valid {false};
+	int _skt_fd {-1};
 };
 
 }
