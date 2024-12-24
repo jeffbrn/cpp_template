@@ -6,10 +6,11 @@
 #include <utility>
 #include <thread>
 #include <atomic>
+#include "network_base.hpp"
 
 namespace utils::network {
 
-class TcpListener {
+class TcpListener : public NetworkBase {
 public:
 	TcpListener(uint16_t port);
 	virtual ~TcpListener();
@@ -23,7 +24,7 @@ private:
 	uint16_t _port;
 	std::thread _thrd;
 	std::atomic<bool> _running {false};
-	static constexpr int BUFF_SZ = 65535;
+	static constexpr int BUFF_SZ = 1000000; //65535;
 	uint8_t _buff[BUFF_SZ] {};
 
 	void handler();

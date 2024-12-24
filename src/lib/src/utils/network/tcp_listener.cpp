@@ -16,19 +16,19 @@ TcpListener::TcpListener(uint16_t port) {
 	svr_addr.sin_port = htons(port);
 	_skt_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_skt_fd == -1) {
-		cout << "ERR: failed to create server socket" << endl;
+		cout << "SERVER: *ERR* failed to create socket" << endl;
 		return;
 	}
 
 	if (bind(_skt_fd, reinterpret_cast<const sockaddr*>(&svr_addr), sizeof(svr_addr)) < 0) {
-		cout << "ERR: failed to create bind socket to port" << endl;
+		cout << "SERVER: *ERR* failed to create bind socket to port" << endl;
 		return;
 	}
 
 	int flags = fcntl(_skt_fd, F_GETFL, 0);
 	auto result = fcntl(_skt_fd, F_SETFL, flags | O_NONBLOCK);
 	if (result) {
-		cout << "ERR: failed to set socket properties" << endl;
+		cout << "SERVER: *ERR* failed to set socket properties" << endl;
 		return;
 	}
 
@@ -71,23 +71,24 @@ void TcpListener::handler() {
 			this_thread::sleep_for(50ms);
 			if (!_running) goto EXIT_THREAD;
 		}
-cout << "received client connection" << endl;
+cout << "SERVER: received client connection" << endl;
 
-		ssize_t bytes_read;
-		while ((bytes_read = recv(client_skt, _buff, BUFF_SZ, 0)) > 0) {
-cout << "server received " << bytes_read << " bytes" << endl;
+		while (true) {
+cout << "SERVER: getting client message" << endl;
+			ssize_t bytes_read = NetworkBase::recv_msg(client_skt, _buff, BUFF_SZ);
+			if (bytes_read == 0) {
+				break;
+			}
 			if (_msg_handler) {
 				auto [send_buff, send_len] = _msg_handler(_buff, bytes_read);
 				if (send_buff && send_len > 0) {
-cout << "sending " << send_len << " bytes" << endl;
-					send(client_skt, send_buff, send_len, 0);
+cout << "SERVER: sending " << send_len << " bytes" << endl;
+					NetworkBase::send_msg(client_skt, send_buff, send_len);
 				}
 			}
 		}
+cout << "SERVER: closing connection" << endl;
 		close(client_skt);
-		if (bytes_read < 0) {
-			//error
-		}
 	}
 
 EXIT_THREAD:
