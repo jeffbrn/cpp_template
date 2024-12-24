@@ -9,26 +9,26 @@ using namespace std;
 
 namespace utils::network {
 
-TcpListener::TcpListener(uint16_t port) {
+TcpListener::TcpListener(log::ILogger *log, uint16_t port) : NetworkBase(log) {
 	sockaddr_in svr_addr {};
 	svr_addr.sin_family = AF_INET;
 	svr_addr.sin_addr.s_addr = INADDR_ANY;
 	svr_addr.sin_port = htons(port);
 	_skt_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_skt_fd == -1) {
-		cout << "SERVER: *ERR* failed to create socket" << endl;
+		_logger->error("SERVER: failed to create socket");
 		return;
 	}
 
 	if (bind(_skt_fd, reinterpret_cast<const sockaddr*>(&svr_addr), sizeof(svr_addr)) < 0) {
-		cout << "SERVER: *ERR* failed to create bind socket to port" << endl;
+		_logger->error("SERVER: failed to create bind socket to port");
 		return;
 	}
 
 	int flags = fcntl(_skt_fd, F_GETFL, 0);
 	auto result = fcntl(_skt_fd, F_SETFL, flags | O_NONBLOCK);
 	if (result) {
-		cout << "SERVER: *ERR* failed to set socket properties" << endl;
+		_logger->error("SERVER: failed to set socket properties");
 		return;
 	}
 
@@ -71,10 +71,10 @@ void TcpListener::handler() {
 			this_thread::sleep_for(50ms);
 			if (!_running) goto EXIT_THREAD;
 		}
-cout << "SERVER: received client connection" << endl;
+		_logger->info("SERVER: received client connection");
 
 		while (true) {
-cout << "SERVER: getting client message" << endl;
+			_logger->debug("SERVER: waiting for client message");
 			ssize_t bytes_read = NetworkBase::recv_msg(client_skt, _buff, BUFF_SZ);
 			if (bytes_read == 0) {
 				break;
@@ -82,12 +82,12 @@ cout << "SERVER: getting client message" << endl;
 			if (_msg_handler) {
 				auto [send_buff, send_len] = _msg_handler(_buff, bytes_read);
 				if (send_buff && send_len > 0) {
-cout << "SERVER: sending " << send_len << " bytes" << endl;
+					_logger->debug("SERVER: sending %d bytes", send_len);
 					NetworkBase::send_msg(client_skt, send_buff, send_len);
 				}
 			}
 		}
-cout << "SERVER: closing connection" << endl;
+		_logger->info("SERVER: client disconnected");
 		close(client_skt);
 	}
 

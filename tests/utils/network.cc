@@ -1,7 +1,11 @@
 #include <gtest/gtest.h>
+#include "settings.hpp"
 #include "utils/network/tcp_client.hpp"
 #include "utils/network/tcp_listener.hpp"
+#include "utils/log/console_logger.hpp"
+#include "utils/log/null_logger.hpp"
 #include <iostream>
+#include <memory>
 
 using namespace std;
 using namespace utils::network;
@@ -13,7 +17,15 @@ static NetworkTesting *TEST_INSTANCE;
 
 class NetworkTesting : public ::testing::Test {
 protected:
+	unique_ptr<::utils::log::ILogger> _log {};
+
 	void SetUp() override {
+		#if SHOW_LOGS
+		_log = make_unique<::utils::log::ConsoleLogger>(::utils::log::ILogger::LogLevel::DEBUG);
+		#else
+		_log = make_unique<::utils::log::NullLogger>(::utils::log::ILogger::LogLevel::DEBUG);
+		#endif
+
 		_test_port = 23673;
 		TEST_INSTANCE = this;
 	}
@@ -43,10 +55,10 @@ std::pair<const uint8_t*, size_t> svr_handler(const uint8_t *buff, size_t buff_l
 }
 
 TEST_F(NetworkTesting, ClientSendSmallData) {
-	TcpListener svr(_test_port);
+	TcpListener svr(_log.get(), _test_port);
 	svr.set_msg_handler(&svr_handler);
 	this_thread::sleep_for(1000ms);
-	TcpClient client("127.0.0.1", _test_port);
+	TcpClient client(_log.get(), "127.0.0.1", _test_port);
 	EXPECT_TRUE(client.is_valid());
 	this->send_len = 10;
 	InitSendBuffer();
@@ -55,10 +67,10 @@ TEST_F(NetworkTesting, ClientSendSmallData) {
 }
 
 TEST_F(NetworkTesting, ClientSendMaxData) {
-	TcpListener svr(_test_port);
+	TcpListener svr(_log.get(), _test_port);
 	svr.set_msg_handler(&svr_handler);
 	this_thread::sleep_for(1000ms);
-	TcpClient client("127.0.0.1", _test_port);
+	TcpClient client(_log.get(), "127.0.0.1", _test_port);
 	EXPECT_TRUE(client.is_valid());
 	this->send_len = 1000000;
 	client.send(this->send_buff, this->send_len, nullptr, 0);

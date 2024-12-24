@@ -12,7 +12,7 @@ namespace utils::network {
 
 class TcpListener : public NetworkBase {
 public:
-	TcpListener(uint16_t port);
+	TcpListener(log::ILogger *log, uint16_t port);
 	virtual ~TcpListener();
 
 	void set_msg_handler(std::function<std::pair<const uint8_t*, size_t>(const uint8_t*, size_t)>);

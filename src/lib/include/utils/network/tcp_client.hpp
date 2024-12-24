@@ -10,9 +10,10 @@ namespace utils::network {
 class TcpClient : public NetworkBase {
 public:
 	/// @brief @ctor sets up a TCP connection to the server to send and receive messages
+	/// @param log logger to use for class messages
 	/// @param ip_addr server IPV4 address
 	/// @param port server port
-	TcpClient(std::string ip_addr, uint16_t port);
+	TcpClient(log::ILogger *log, std::string ip_addr, uint16_t port);
 	virtual ~TcpClient();
 
 	/// @brief sends a byteserialized message across the connection
