@@ -5,6 +5,7 @@
 #include <functional>
 #include <utility>
 #include <thread>
+#include <memory>
 #include <atomic>
 #include "network_base.hpp"
 
@@ -16,7 +17,7 @@ public:
 	/// @param log logger to use for class status messages
 	/// @param port port to listen on for incoming messages
 	/// @throw 
-	TcpListener(log::ILogger *log, uint16_t port);
+	TcpListener(log::ILogger *log, uint16_t port, uint32_t buffer_size = 1*1024*1024);
 	virtual ~TcpListener();
 
 	/// @brief sets the callback function to handle incoming messages
@@ -28,8 +29,8 @@ private:
 	uint16_t _port;
 	std::thread _thrd;
 	std::atomic<bool> _running {false}; // flag to stop the thread
-	static constexpr int BUFF_SZ = 1000000; //65535;
-	uint8_t _buff[BUFF_SZ] {};
+	uint32_t _buff_len {0};
+	std::unique_ptr<uint8_t[]> _buff;
 
 	/// @brief this is the thread function that listens for incoming messages
 	void handler();

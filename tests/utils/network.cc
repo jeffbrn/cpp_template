@@ -45,7 +45,7 @@ public:
 	size_t send_len {0}, recv_len {0};
 };
 
-std::pair<const uint8_t*, size_t> svr_handler(const uint8_t *buff, size_t buff_len) {
+std::pair<const uint8_t*, size_t> svr_handler_only_rcv(const uint8_t *buff, size_t buff_len) {
 	cout << "*** in handler ***" << endl;
 	EXPECT_EQ(TEST_INSTANCE->send_len, buff_len);
 	for(int i = 0; i < buff_len; ++i) {
@@ -54,27 +54,96 @@ std::pair<const uint8_t*, size_t> svr_handler(const uint8_t *buff, size_t buff_l
 	return make_pair(nullptr, 0);
 }
 
-TEST_F(NetworkTesting, ClientSendSmallData) {
+std::pair<const uint8_t*, size_t> svr_handler_only_snd(const uint8_t *buff, size_t buff_len) {
+	cout << "*** in handler ***" << endl;
+	EXPECT_EQ(buff_len, 0);
+	return make_pair(TEST_INSTANCE->send_buff, TEST_INSTANCE->send_len);
+}
+
+TEST_F(NetworkTesting, ListenerStartupShutdown) {
 	TcpListener svr(_log.get(), _test_port);
-	svr.set_msg_handler(&svr_handler);
-	this_thread::sleep_for(1000ms);
-	TcpClient client(_log.get(), "127.0.0.1", _test_port);
-	EXPECT_TRUE(client.is_valid());
-	this->send_len = 10;
-	InitSendBuffer();
-	client.send(this->send_buff, this->send_len, nullptr, 0);
 	this_thread::sleep_for(1000ms);
 }
 
-TEST_F(NetworkTesting, ClientSendMaxData) {
+TEST_F(NetworkTesting, ClientSendSmallData) {
 	TcpListener svr(_log.get(), _test_port);
-	svr.set_msg_handler(&svr_handler);
-	this_thread::sleep_for(1000ms);
+	svr.set_msg_handler(&svr_handler_only_rcv);
+	this_thread::sleep_for(10ms);
+	TcpClient client(_log.get(), "localhost", _test_port);
+	EXPECT_TRUE(client.is_valid());
+	this->send_len = 10;
+	InitSendBuffer();
+	auto [success, recv_len] = client.send(this->send_buff, this->send_len, nullptr, 0);
+	EXPECT_TRUE(success);
+	EXPECT_EQ(0, recv_len);
+	this_thread::sleep_for(100ms);
+}
+
+TEST_F(NetworkTesting, ClientOnlyRecvData) {
+	TcpListener svr(_log.get(), _test_port);
+	svr.set_msg_handler(&svr_handler_only_snd);
+	this_thread::sleep_for(10ms);
+	TcpClient client(_log.get(), "localhost", _test_port);
+	EXPECT_TRUE(client.is_valid());
+	this->send_len = 10;
+	InitSendBuffer();
+	auto [success, recv_len] = client.send(nullptr, 0, this->recv_buff, this->send_len);
+	EXPECT_TRUE(success);
+	EXPECT_EQ(this->send_len, recv_len);
+	this_thread::sleep_for(100ms);
+}
+
+TEST_F(NetworkTesting, ClientSendMaxData) {
+	uint32_t buff_len = 4*1024*1024;
+	TcpListener svr(_log.get(), _test_port, buff_len);
+	svr.set_msg_handler(&svr_handler_only_rcv);
+	this_thread::sleep_for(10ms);
 	TcpClient client(_log.get(), "127.0.0.1", _test_port);
 	EXPECT_TRUE(client.is_valid());
-	this->send_len = 1000000;
-	client.send(this->send_buff, this->send_len, nullptr, 0);
-	this_thread::sleep_for(1000ms);
+	this->send_len = buff_len;
+	InitSendBuffer();
+	auto [success, recv_len] = client.send(this->send_buff, this->send_len, nullptr, 0);
+	EXPECT_TRUE(success);
+	EXPECT_EQ(0, recv_len);
+	this_thread::sleep_for(100ms);
+}
+
+TEST_F(NetworkTesting, ListenPortinUse) {
+	TcpListener svr1(_log.get(), _test_port);
+	this_thread::sleep_for(10ms);
+	EXPECT_THROW(TcpListener svr2(_log.get(), _test_port), std::runtime_error);
+	this_thread::sleep_for(10ms);
+}
+
+TEST_F(NetworkTesting, ClientSvrNotListening) {
+	TcpClient client(_log.get(), "127.0.0.1", _test_port);
+	EXPECT_FALSE(client.is_valid());
+}
+
+TEST_F(NetworkTesting, ClientBadAddress) {
+	TcpClient client(_log.get(), "555.0.0.1", _test_port);
+	EXPECT_FALSE(client.is_valid());
+}
+
+TEST_F(NetworkTesting, ClientBadSendBufferLen) {
+	TcpListener svr(_log.get(), _test_port);
+	TcpClient client(_log.get(), "localhost", _test_port);
+	EXPECT_TRUE(client.is_valid());
+	auto [success, recv_len] = client.send(nullptr, 10, nullptr, 0);
+	EXPECT_FALSE(success);
+	EXPECT_EQ(0, recv_len);
+}
+
+TEST_F(NetworkTesting, ClientBadRecvBufferLen) {
+	TcpListener svr(_log.get(), _test_port);
+	TcpClient client(_log.get(), "localhost", _test_port);
+	EXPECT_TRUE(client.is_valid());
+	this->send_len = 10;
+	InitSendBuffer();
+	auto [success, recv_len] = client.send(this->send_buff, this->send_len, nullptr, 10);
+	EXPECT_FALSE(success);
+	EXPECT_EQ(0, recv_len);
+	this_thread::sleep_for(100ms);
 }
 
 }

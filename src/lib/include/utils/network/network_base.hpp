@@ -26,8 +26,8 @@ protected:
 	/// @param skt socker to receive the message
 	/// @param rcv_buff pointer to the buffer where the message will be stored
 	/// @param buff_len length of the buffer
-	/// @return length of the received message or 0 if failed
-	uint32_t recv_msg(int skt, uint8_t *rcv_buff, uint32_t buff_len);
+	/// @return length of the received message or -1 if failed
+	ssize_t recv_msg(int skt, uint8_t *rcv_buff, uint32_t buff_len);
 
 	log::ILogger *_logger;
 

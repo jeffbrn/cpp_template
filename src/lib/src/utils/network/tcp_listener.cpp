@@ -9,7 +9,9 @@ using namespace std;
 
 namespace utils::network {
 
-TcpListener::TcpListener(log::ILogger *log, uint16_t port) : NetworkBase(log) {
+TcpListener::TcpListener(log::ILogger *log, uint16_t port, uint32_t buffer_size) : NetworkBase(log),
+	_port(port), _buff_len(buffer_size), _buff(make_unique<uint8_t[]>(buffer_size))
+{
 	sockaddr_in svr_addr {};
 	svr_addr.sin_family = AF_INET;
 	svr_addr.sin_addr.s_addr = INADDR_ANY;
@@ -68,18 +70,19 @@ void TcpListener::handler() {
 
 		while (true) {
 			_logger->debug("SERVER: waiting for client message");
-			ssize_t bytes_read = NetworkBase::recv_msg(client_skt, _buff, BUFF_SZ);
-			if (bytes_read == 0) {
+			ssize_t bytes_read = NetworkBase::recv_msg(client_skt, _buff.get(), _buff_len);
+			if (bytes_read < 0) {
 				// client disconnected
 				break;
 			}
 			if (_msg_handler) {
 				//send message to the handler and get response if any
-				auto [send_buff, send_len] = _msg_handler(_buff, bytes_read);
-				if (send_buff && send_len > 0) {
-					_logger->debug("SERVER: sending %d bytes", send_len);
-					NetworkBase::send_msg(client_skt, send_buff, send_len);
-				}
+				auto [send_buff, send_len] = _msg_handler(_buff.get(), bytes_read);
+				_logger->debug("SERVER: sending %d bytes", send_len);
+				NetworkBase::send_msg(client_skt, send_buff, send_len);
+			} else {
+				_logger->warn("SERVER: no message handler set, sending empty response");
+				NetworkBase::send_msg(client_skt, nullptr, 0);
 			}
 		}
 		_logger->info("SERVER: client disconnected");
