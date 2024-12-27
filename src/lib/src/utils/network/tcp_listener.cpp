@@ -17,59 +17,52 @@ TcpListener::TcpListener(log::ILogger *log, uint16_t port) : NetworkBase(log) {
 	_skt_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_skt_fd == -1) {
 		_logger->error("SERVER: failed to create socket");
-		return;
+		throw runtime_error("failed to create socket");
 	}
 
 	if (bind(_skt_fd, reinterpret_cast<const sockaddr*>(&svr_addr), sizeof(svr_addr)) < 0) {
 		_logger->error("SERVER: failed to create bind socket to port");
-		return;
+		throw runtime_error("failed to bind socket to port");
 	}
 
 	int flags = fcntl(_skt_fd, F_GETFL, 0);
 	auto result = fcntl(_skt_fd, F_SETFL, flags | O_NONBLOCK);
 	if (result) {
 		_logger->error("SERVER: failed to set socket properties");
-		return;
+		throw runtime_error("failed to set socket properties");
 	}
 
 	_running = true;
 	_thrd = std::move(thread(&TcpListener::handler, this));
-	_valid = true;
-	this_thread::sleep_for(1ms);
 }
 
 TcpListener::~TcpListener() {
-	if (_valid) {
-		wait();
-		close(_skt_fd);
+	// stop thread from accepting connections
+	_running = false;
+	if (_thrd.joinable()) {
+		_thrd.join();
 	}
+	// close the socket
+	close(_skt_fd);
 }
 
 void TcpListener::set_msg_handler(std::function<std::pair<const uint8_t*, size_t>(const uint8_t*, size_t)> msg_handler) {
 	_msg_handler = std::move(msg_handler);
 }
 
-void TcpListener::wait() {
-	if (_valid) {
-		_running = false;
-		if (_thrd.joinable()) {
-			_thrd.join();
-		}
-	}
-}
-
 void TcpListener::handler() {
 	using namespace std::chrono_literals;
-	_running = true;
+
 	if (_skt_fd == -1) return;
 	listen(_skt_fd, 0);
 	while (_running) {
 		sockaddr_in client_addr {};
 		socklen_t addr_len = sizeof(client_addr);
 		int client_skt = -1;
+		// busy wait for incoming connection
 		while ((client_skt = accept(_skt_fd, reinterpret_cast<sockaddr*>(&client_addr), &addr_len)) < 0) {
 			this_thread::sleep_for(50ms);
-			if (!_running) goto EXIT_THREAD;
+			if (!_running) goto EXIT_THREAD; // signalled to stop
 		}
 		_logger->info("SERVER: received client connection");
 
@@ -77,9 +70,11 @@ void TcpListener::handler() {
 			_logger->debug("SERVER: waiting for client message");
 			ssize_t bytes_read = NetworkBase::recv_msg(client_skt, _buff, BUFF_SZ);
 			if (bytes_read == 0) {
+				// client disconnected
 				break;
 			}
 			if (_msg_handler) {
+				//send message to the handler and get response if any
 				auto [send_buff, send_len] = _msg_handler(_buff, bytes_read);
 				if (send_buff && send_len > 0) {
 					_logger->debug("SERVER: sending %d bytes", send_len);

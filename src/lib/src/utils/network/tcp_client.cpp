@@ -20,7 +20,7 @@ TcpClient::TcpClient(log::ILogger *log, std::string ip_addr, uint16_t port) : Ne
 		return;
 	}
 
-	// instantiate client socker
+	// instantiate client socket
 	_skt_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (_skt_fd <= 0) {
 		_logger->error("CLIENT: failed to create socket");
@@ -59,7 +59,6 @@ pair<bool, uint32_t> TcpClient::send(const uint8_t* send_msg, uint32_t msg_len, 
 		_logger->debug("CLIENT: sending message");
 		if (!NetworkBase::send_msg(_skt_fd, send_msg, msg_len)) {
 			_logger->error("CLIENT: failed to send message");
-			_valid = false;
 			return make_pair(false, 0);
 		}
 		_logger->debug("CLIENT: sent %d bytes", msg_len);
@@ -71,7 +70,6 @@ pair<bool, uint32_t> TcpClient::send(const uint8_t* send_msg, uint32_t msg_len, 
 	uint32_t recvd_bytes = 0;
 	if ((recvd_bytes = NetworkBase::recv_msg(_skt_fd, recv_msg, max_rcv_msg_len)) == 0) {
 		_logger->error("CLIENT: failed to receive response");
-		_valid = false;
 		return make_pair(false, 0);
 	}
 	_logger->debug("CLIENT: received %d bytes", recvd_bytes);

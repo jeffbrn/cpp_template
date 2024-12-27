@@ -3,13 +3,18 @@
 
 namespace utils::log {
 
+using namespace std;
+
 void ILogger::error(const char *msg, ...) {
 	if (_filter >= LogLevel::ERROR) {
 		va_list args;
 		va_start(args, msg);
-		auto txt = get_text(msg, args);
-		va_end(args);
-		log(txt, LogLevel::ERROR);
+		{
+			lock_guard lock(_mtx);
+			auto txt = get_text(msg, args);
+			va_end(args);
+			log(txt, LogLevel::ERROR);
+		}
 	}
 }
 
@@ -17,9 +22,12 @@ void ILogger::warn(const char *msg, ...) {
 	if (_filter >= LogLevel::WARNING) {
 		va_list args;
 		va_start(args, msg);
-		auto txt = get_text(msg, args);
-		va_end(args);
-		log(txt, LogLevel::WARNING);
+		{
+			lock_guard lock(_mtx);
+			auto txt = get_text(msg, args);
+			va_end(args);
+			log(txt, LogLevel::WARNING);
+		}
 	}
 }
 
@@ -27,9 +35,12 @@ void ILogger::info(const char *msg, ...) {
 	if (_filter >= LogLevel::INFO) {
 		va_list args;
 		va_start(args, msg);
-		auto txt = get_text(msg, args);
-		va_end(args);
-		log(txt, LogLevel::INFO);
+		{
+			lock_guard lock(_mtx);
+			auto txt = get_text(msg, args);
+			va_end(args);
+			log(txt, LogLevel::INFO);
+		}
 	}
 }
 
@@ -37,9 +48,12 @@ void ILogger::debug(const char *msg, ...) {
 	if (_filter >= LogLevel::DEBUG) {
 		va_list args;
 		va_start(args, msg);
-		auto txt = get_text(msg, args);
-		va_end(args);
-		log(txt, LogLevel::DEBUG);
+		{
+			lock_guard lock(_mtx);
+			auto txt = get_text(msg, args);
+			va_end(args);
+			log(txt, LogLevel::DEBUG);
+		}
 	}
 }
 
