@@ -1,1 +1,1 @@
-#define SHOW_LOGS 1
+#define SHOW_LOGS 0

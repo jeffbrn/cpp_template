@@ -46,7 +46,6 @@ public:
 };
 
 std::pair<const uint8_t*, size_t> svr_handler_only_rcv(const uint8_t *buff, size_t buff_len) {
-	cout << "*** in handler ***" << endl;
 	EXPECT_EQ(TEST_INSTANCE->send_len, buff_len);
 	for(int i = 0; i < buff_len; ++i) {
 		EXPECT_EQ(TEST_INSTANCE->send_buff[i], buff[i]);
@@ -55,8 +54,20 @@ std::pair<const uint8_t*, size_t> svr_handler_only_rcv(const uint8_t *buff, size
 }
 
 std::pair<const uint8_t*, size_t> svr_handler_only_snd(const uint8_t *buff, size_t buff_len) {
-	cout << "*** in handler ***" << endl;
 	EXPECT_EQ(buff_len, 0);
+	return make_pair(TEST_INSTANCE->send_buff, TEST_INSTANCE->send_len);
+}
+
+std::pair<const uint8_t*, size_t> svr_handler_send_rcv(const uint8_t *buff, size_t buff_len) {
+	EXPECT_EQ(TEST_INSTANCE->send_len, buff_len);
+	for(int i = 0; i < buff_len; ++i) {
+		EXPECT_EQ(TEST_INSTANCE->send_buff[i], buff[i]);
+		if (buff[i] == 255) {
+			TEST_INSTANCE->send_buff[i] = 0;
+		} else {
+			TEST_INSTANCE->send_buff[i] = buff[i] + 1;
+		}
+	}
 	return make_pair(TEST_INSTANCE->send_buff, TEST_INSTANCE->send_len);
 }
 
@@ -79,6 +90,21 @@ TEST_F(NetworkTesting, ClientSendSmallData) {
 	this_thread::sleep_for(100ms);
 }
 
+TEST_F(NetworkTesting, ClientSendMaxData) {
+	uint32_t buff_len = 4*1024*1024;
+	TcpListener svr(_log.get(), _test_port, buff_len);
+	svr.set_msg_handler(&svr_handler_only_rcv);
+	this_thread::sleep_for(10ms);
+	TcpClient client(_log.get(), "127.0.0.1", _test_port);
+	EXPECT_TRUE(client.is_valid());
+	this->send_len = buff_len;
+	InitSendBuffer();
+	auto [success, recv_len] = client.send(this->send_buff, this->send_len, nullptr, 0);
+	EXPECT_TRUE(success);
+	EXPECT_EQ(0, recv_len);
+	this_thread::sleep_for(100ms);
+}
+
 TEST_F(NetworkTesting, ClientOnlyRecvData) {
 	TcpListener svr(_log.get(), _test_port);
 	svr.set_msg_handler(&svr_handler_only_snd);
@@ -93,18 +119,21 @@ TEST_F(NetworkTesting, ClientOnlyRecvData) {
 	this_thread::sleep_for(100ms);
 }
 
-TEST_F(NetworkTesting, ClientSendMaxData) {
-	uint32_t buff_len = 4*1024*1024;
-	TcpListener svr(_log.get(), _test_port, buff_len);
-	svr.set_msg_handler(&svr_handler_only_rcv);
+TEST_F(NetworkTesting, ClientSendAndRecvData) {
+	TcpListener svr(_log.get(), _test_port);
+	svr.set_msg_handler(&svr_handler_send_rcv);
 	this_thread::sleep_for(10ms);
-	TcpClient client(_log.get(), "127.0.0.1", _test_port);
+	TcpClient client(_log.get(), "localhost", _test_port);
 	EXPECT_TRUE(client.is_valid());
-	this->send_len = buff_len;
+	this->send_len = 10;
 	InitSendBuffer();
-	auto [success, recv_len] = client.send(this->send_buff, this->send_len, nullptr, 0);
+	this->recv_len = 10;
+	auto [success, recv_len] = client.send(this->send_buff, this->send_len, this->recv_buff, this->send_len);
 	EXPECT_TRUE(success);
-	EXPECT_EQ(0, recv_len);
+	EXPECT_EQ(this->send_len, recv_len);
+	for(int i = 0; i < recv_len; ++i) {
+		EXPECT_EQ(send_buff[i], this->recv_buff[i]);
+	}
 	this_thread::sleep_for(100ms);
 }
 
