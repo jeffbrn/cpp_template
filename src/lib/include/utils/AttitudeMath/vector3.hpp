@@ -76,13 +76,14 @@ public:
 	void normalize();
 	Vector3<T> unit() const;
 	Vector3<T> cross(const Vector3<T>& rhs) const {
-		T x = (y() * rhs.z()) - (z() * rhs.y());
-		T y = (z() * rhs.x()) - (x() * rhs.z());
-		T z = (x() * rhs.y()) - (y() * rhs.x());
+		T x = (this->y() * rhs.z()) - (this->z() * rhs.y());
+		T y = (this->z() * rhs.x()) - (this->x() * rhs.z());
+		T z = (this->x() * rhs.y()) - (this->y() * rhs.x());
 		return Vector3<T>(x, y, z);
 	}
 	T dot(const Vector3<T>& rhs) const { return x()*rhs.x() + y()*rhs.y() + z()*rhs.z(); }
 
+	// Predefined vectors
 	static const Vector3<T> xAxis() { return Vector3<T>(1,0,0); }
 	static const Vector3<T> yAxis() { return Vector3<T>(0,1,0); }
 	static const Vector3<T> zAxis() { return Vector3<T>(0,0,1); }
@@ -163,10 +164,10 @@ static Vector3<T> operator/(const T lhs, const Vector3<T>& rhs) {
 	return Vector3<T>(lhs / rhs.x(), lhs / rhs.y(), lhs / rhs.z());
 }
 
-// vector stream
+// stream operator
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const Vector3<T>& v) {
-	os << "(" << v.x() << "," << v.y() << "," << v.z() << ")";
+	os << "[ " << v.x() << "," << v.y() << "," << v.z() << " ]";
 	return os;
 }
 

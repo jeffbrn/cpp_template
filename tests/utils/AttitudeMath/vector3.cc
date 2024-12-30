@@ -11,7 +11,7 @@ namespace utils::AttitudeMath {
 /// @brief Allows gogletest to print vector value
 template<typename T>
 void PrintTo(const Vector3<T>& v, ostream* os) {
-	*os << "(" << v.x() << "," << v.y() << "," << v.z() << ")";
+	*os << "[ " << v.x() << "," << v.y() << "," << v.z() << " ]";
 }
 
 }
@@ -163,6 +163,11 @@ TEST_F(Vector3Testing, VectorOperations) {
 	EXPECT_EQ(v3, Vector3<double>(10.0/v3_norm, 20.0/v3_norm, 30.0/v3_norm));
 	EXPECT_THROW(Vector3<double>().normalize(), std::invalid_argument);
 	EXPECT_THROW(Vector3<double>().unit(), std::invalid_argument);
+
+	const Vector3<int> v4a(1, 2, 3);
+	const Vector3<int> v4b(4, 5, 6);
+	EXPECT_EQ(32, v4a.dot(v4b));
+	EXPECT_EQ(Vector3<int>(-3, 6, -3), v4a.cross(v4b));
 }
 
 }
