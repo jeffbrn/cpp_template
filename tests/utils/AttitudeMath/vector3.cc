@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <iostream>
+#include <cmath>
 #include "utils/AttitudeMath/vector3.hpp"
 
 using namespace std;
@@ -7,6 +8,7 @@ using namespace utils::AttitudeMath;
 
 namespace utils::AttitudeMath {
 
+/// @brief Allows gogletest to print vector value
 template<typename T>
 void PrintTo(const Vector3<T>& v, ostream* os) {
 	*os << "(" << v.x() << "," << v.y() << "," << v.z() << ")";
@@ -32,6 +34,21 @@ TEST_F(Vector3Testing, ConstAccess) {
 	EXPECT_EQ(3, v[2]);
 	EXPECT_THROW(v[3], std::invalid_argument);
 	EXPECT_THROW(v[-1], std::invalid_argument);
+}
+
+TEST_F(Vector3Testing, PredefVectors) {
+	const Vector3<double> v1a;
+	const Vector3<double> v1b(0.0, 0.0, 0.0);
+	EXPECT_EQ(v1a, v1b);
+	auto v2a = Vector3<float>::xAxis();
+	const Vector3<float> v2b(1.f, 0.f, 0.f);
+	EXPECT_EQ(v2a, v2b);
+	auto v3a = Vector3<int>::yAxis();
+	const Vector3<int> v3b(0, 1, 0);
+	EXPECT_EQ(v3a, v3b);
+	auto v4a = Vector3<double>::zAxis();
+	const Vector3<double> v4b(0.0, 0.0, 1.0);
+	EXPECT_EQ(v4a, v4b);
 }
 
 TEST_F(Vector3Testing, BadConstructor) {
@@ -73,6 +90,7 @@ TEST_F(Vector3Testing, OperatorAssignmentScalar) {
 	EXPECT_EQ(v1, v4);
 	v1 /= 2.f;
 	EXPECT_EQ(v1, v3);
+	EXPECT_THROW(v1 /= 0.f, std::invalid_argument);
 }
 
 TEST_F(Vector3Testing, OperatorAssignmentVector) {
@@ -96,6 +114,55 @@ TEST_F(Vector3Testing, OperatorAssignmentVector) {
 	const Vector3<float> v4r(1.f, 1.f, 0.5f);
 	v4a /= v4b;
 	EXPECT_EQ(v4a, v4r);
+	EXPECT_THROW(v1a / Vector3<float>(), std::invalid_argument);
+}
+
+TEST_F(Vector3Testing, VectorVectorOps) {
+	auto v1a = Vector3<int>::xAxis() + Vector3<int>::yAxis() + Vector3<int>::zAxis();
+	const Vector3<int> v1b(1, 1, 1);
+	EXPECT_EQ(v1a, v1b);
+	auto v2a = Vector3<float>::xAxis() - Vector3<float>::yAxis() - Vector3<float>::zAxis();
+	const Vector3<float> v2b(1.f, -1.f, -1.f);
+	EXPECT_EQ(v2a, v2b);
+	auto v3a = Vector3<int>::xAxis() * Vector3<int>::yAxis() * Vector3<int>::zAxis();
+	const Vector3<int> v3b;
+	EXPECT_EQ(v3a, v3b);
+	auto v4a = Vector3<double>(1.0, 2.0, 3.0) / Vector3<double>(2.0, 2.0, 2.0);
+	const Vector3<double> v4b(0.5, 1.0, 1.5);
+	EXPECT_EQ(v4a, v4b);
+	auto v5a = -Vector3<int>::xAxis();
+	auto v5b = Vector3<int>(-1, 0, 0);
+	EXPECT_EQ(v5a, v5b);
+	EXPECT_THROW(v4b / Vector3<double>(), std::invalid_argument);
+}
+
+TEST_F(Vector3Testing, VectorScalarOps) {
+	auto v1a = 1 + Vector3<int>::xAxis() - 2;
+	const Vector3<int> v1b(0, -1, -1);
+	EXPECT_EQ(v1a, v1b);
+	auto v2a = 2.0 * Vector3<double>(2.0, 3.0, 4.0) / 4.0;
+	const Vector3<double> v2b(1.0, 1.5, 2.0);
+	EXPECT_EQ(v2a, v2b);
+	EXPECT_THROW(v1b / 0, std::invalid_argument);
+	EXPECT_THROW(4.0 / Vector3<double>(), std::invalid_argument);
+}
+
+TEST_F(Vector3Testing, VectorOperations) {
+	const Vector3<int> v1(3, 4, 5);
+	EXPECT_EQ(static_cast<int>(sqrt(50.0)), v1.norm());
+	Vector3<float> v2(1.f, 2.f, 3.f);
+	EXPECT_EQ(sqrt(14.f), v2.norm());
+	auto v2_unit = v2.unit();
+	v2.normalize();
+	EXPECT_EQ(v2, Vector3<float>(1.f/sqrt(14.f), 2.f/sqrt(14.f), 3.f/sqrt(14.f)));
+	EXPECT_EQ(v2_unit, v2);
+	Vector3<double> v3(10.0, 20.0, 30.0);
+	auto v3_norm = v3.norm();
+	EXPECT_EQ(v3_norm, v3.norm());
+	v3.normalize();
+	EXPECT_EQ(v3, Vector3<double>(10.0/v3_norm, 20.0/v3_norm, 30.0/v3_norm));
+	EXPECT_THROW(Vector3<double>().normalize(), std::invalid_argument);
+	EXPECT_THROW(Vector3<double>().unit(), std::invalid_argument);
 }
 
 }

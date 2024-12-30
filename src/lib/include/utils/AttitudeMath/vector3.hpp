@@ -3,6 +3,7 @@
 #include <array>
 #include <initializer_list>
 #include <stdexcept>
+#include <iostream>
 
 namespace utils::AttitudeMath {
 
@@ -29,40 +30,62 @@ public:
 	void z(T val) { _elem[2] = val; }
 
 	// Operator assignments - scalar
-	Vector3<T>& operator+=(const T val) {
-		_elem[0] += val; _elem[1] += val; _elem[2] += val;
+	Vector3<T>& operator+=(const T rhs) {
+		_elem[0] += rhs; _elem[1] += rhs; _elem[2] += rhs;
 		return *this;
 	}
-	Vector3<T>& operator-=(const T val) {
-		_elem[0] -= val; _elem[1] -= val; _elem[2] -= val;
+	Vector3<T>& operator-=(const T rhs) {
+		_elem[0] -= rhs; _elem[1] -= rhs; _elem[2] -= rhs;
 		return *this;
 	}
-	Vector3<T>& operator*=(const T val) {
-		_elem[0] *= val; _elem[1] *= val; _elem[2] *= val;
+	Vector3<T>& operator*=(const T rhs) {
+		_elem[0] *= rhs; _elem[1] *= rhs; _elem[2] *= rhs;
 		return *this;
 	}
-	Vector3<T>& operator/=(const T val) {
-		_elem[0] /= val; _elem[1] /= val; _elem[2] /= val;
+	Vector3<T>& operator/=(const T rhs) {
+		if (rhs == 0) {
+			throw std::invalid_argument("Cannot divide by zero");
+		}
+		_elem[0] /= rhs; _elem[1] /= rhs; _elem[2] /= rhs;
 		return *this;
 	}
 
 	// Operator assignments - vector
-	Vector3<T>& operator+=(const Vector3<T>& other) {
-		_elem[0] += other[0]; _elem[1] += other[1]; _elem[2] += other[2];
+	Vector3<T>& operator+=(const Vector3<T>& rhs) {
+		_elem[0] += rhs[0]; _elem[1] += rhs[1]; _elem[2] += rhs[2];
 		return *this;
 	}
-	Vector3<T>& operator-=(const Vector3<T>& other) {
-		_elem[0] -= other[0]; _elem[1] -= other[1]; _elem[2] -= other[2];
+	Vector3<T>& operator-=(const Vector3<T>& rhs) {
+		_elem[0] -= rhs[0]; _elem[1] -= rhs[1]; _elem[2] -= rhs[2];
 		return *this;
 	}
-	Vector3<T>& operator*=(const Vector3<T>& other) {
-		_elem[0] *= other[0]; _elem[1] *= other[1]; _elem[2] *= other[2];
+	Vector3<T>& operator*=(const Vector3<T>& rhs) {
+		_elem[0] *= rhs[0]; _elem[1] *= rhs[1]; _elem[2] *= rhs[2];
 		return *this;
 	}
-	Vector3<T>& operator/=(const Vector3<T>& other) {
-		_elem[0] /= other[0]; _elem[1] /= other[1]; _elem[2] /= other[2];
+	Vector3<T>& operator/=(const Vector3<T>& rhs) {
+		if (rhs.x() == 0 || rhs.y() == 0 || rhs.z() == 0) {
+			throw std::invalid_argument("Cannot divide by zero");
+		}
+		_elem[0] /= rhs[0]; _elem[1] /= rhs[1]; _elem[2] /= rhs[2];
 		return *this;
 	}
+
+	// Vector operations
+	T norm() const;
+	void normalize();
+	Vector3<T> unit() const;
+	Vector3<T> cross(const Vector3<T>& rhs) const {
+		T x = (y() * rhs.z()) - (z() * rhs.y());
+		T y = (z() * rhs.x()) - (x() * rhs.z());
+		T z = (x() * rhs.y()) - (y() * rhs.x());
+		return Vector3<T>(x, y, z);
+	}
+	T dot(const Vector3<T>& rhs) const { return x()*rhs.x() + y()*rhs.y() + z()*rhs.z(); }
+
+	static const Vector3<T> xAxis() { return Vector3<T>(1,0,0); }
+	static const Vector3<T> yAxis() { return Vector3<T>(0,1,0); }
+	static const Vector3<T> zAxis() { return Vector3<T>(0,0,1); }
 
 private:
 	std::array<T,3> _elem;
@@ -73,6 +96,78 @@ template<typename T>
 static bool operator==(const Vector3<T>& lhs, const Vector3<T>& rhs) {
 	return lhs.x() == rhs.x() && lhs.y() == rhs.y() && lhs.z() == rhs.z();
 }
-	
+
+// Vector / Vector Elementwise Operations
+template<typename T>
+static Vector3<T> operator-(const Vector3<T>& rhs) {
+	return Vector3<T>(-rhs.x(), -rhs.y(), -rhs.z());
+}
+template<typename T>
+static Vector3<T> operator+(const Vector3<T>& lhs, const Vector3<T>& rhs) {
+	return Vector3<T>(lhs.x() + rhs.x(), lhs.y() + rhs.y(), lhs.z() + rhs.z());
+}
+template<typename T>
+static Vector3<T> operator-(const Vector3<T>& lhs, const Vector3<T>& rhs) {
+	return Vector3<T>(lhs.x() - rhs.x(), lhs.y() - rhs.y(), lhs.z() - rhs.z());
+}
+template<typename T>
+static Vector3<T> operator*(const Vector3<T>& lhs, const Vector3<T>& rhs) {
+	return Vector3<T>(lhs.x() * rhs.x(), lhs.y() * rhs.y(), lhs.z() * rhs.z());
+}
+template<typename T>
+static Vector3<T> operator/(const Vector3<T>& lhs, const Vector3<T>& rhs) {
+	if (rhs.x() == 0 || rhs.y() == 0 || rhs.z() == 0) {
+		throw std::invalid_argument("Cannot divide by a vector with a zero dimension");
+	}
+	return Vector3<T>(lhs.x() / rhs.x(), lhs.y() / rhs.y(), lhs.z() / rhs.z());
+}
+
+// Vector / Scalar Operations
+template<typename T>
+static Vector3<T> operator+(const Vector3<T>& lhs, const T rhs) {
+	return Vector3<T>(lhs.x() + rhs, lhs.y() + rhs, lhs.z() + rhs);
+}
+template<typename T>
+static Vector3<T> operator-(const Vector3<T>& lhs, const T rhs) {
+	return Vector3<T>(lhs.x() - rhs, lhs.y() - rhs, lhs.z() - rhs);
+}
+template<typename T>
+static Vector3<T> operator*(const Vector3<T>& lhs, const T rhs) {
+	return Vector3<T>(lhs.x() * rhs, lhs.y() * rhs, lhs.z() * rhs);
+}
+template<typename T>
+static Vector3<T> operator/(const Vector3<T>& lhs, const T rhs) {
+	if (rhs == 0) {
+		throw std::invalid_argument("Cannot divide by zero");
+	}
+	return Vector3<T>(lhs.x() / rhs, lhs.y() / rhs, lhs.z() / rhs);
+}
+
+template<typename T>
+static Vector3<T> operator+(const T lhs, const Vector3<T>& rhs) {
+	return Vector3<T>(lhs + rhs.x(), lhs + rhs.y(), lhs + rhs.z());
+}
+template<typename T>
+static Vector3<T> operator-(const T lhs, const Vector3<T>& rhs) {
+	return Vector3<T>(lhs - rhs.x(), lhs - rhs.y(), lhs - rhs.z());
+}
+template<typename T>
+static Vector3<T> operator*(const T lhs, const Vector3<T>& rhs) {
+	return Vector3<T>(lhs * rhs.x(), lhs * rhs.y(), lhs * rhs.z());
+}
+template<typename T>
+static Vector3<T> operator/(const T lhs, const Vector3<T>& rhs) {
+	if (rhs.x() == 0 || rhs.y() == 0 || rhs.z() == 0) {
+		throw std::invalid_argument("Cannot divide by zero");
+	}
+	return Vector3<T>(lhs / rhs.x(), lhs / rhs.y(), lhs / rhs.z());
+}
+
+// vector stream
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const Vector3<T>& v) {
+	os << "(" << v.x() << "," << v.y() << "," << v.z() << ")";
+	return os;
+}
 
 }
