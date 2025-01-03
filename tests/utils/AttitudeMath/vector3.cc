@@ -1,20 +1,10 @@
 #include <gtest/gtest.h>
-#include <iostream>
 #include <cmath>
 #include "utils/AttitudeMath/vector3.hpp"
+#include "test_stream_formatters.hpp"
 
 using namespace std;
 using namespace utils::AttitudeMath;
-
-namespace utils::AttitudeMath {
-
-/// @brief Allows gogletest to print vector value
-template<typename T>
-void PrintTo(const Vector3<T>& v, ostream* os) {
-	*os << "[ " << v.x() << "," << v.y() << "," << v.z() << " ]";
-}
-
-}
 
 namespace unit_tests::utils::AttitudeMath {
 

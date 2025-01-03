@@ -1,15 +1,19 @@
 #include <iostream>
-#include "func.h"
+#include "utils/AttitudeMath/matrix33.hpp"
 
 using namespace std;
+using namespace utils::AttitudeMath;
 
 int main() {
 	cout << "Hello world!" << endl;
 
-	array<float,3> v { 1.f, 2.f, 3.f};
-	auto result = calc_vec(v);
+	Matrix33<float> r = Matrix33<float>::Identity();
 
-	cout << "Distance of [" << v[0] << "," << v[1] << "," << v[2] << "] is " << result << endl;
+	for(int i = 0; i < 100; i++) {
+		auto rdot = r.dcmKinematicRates_BodyRate(Vector3<float>{1.f, 0.f, 0.f});
+		r = r.integrateDCM(rdot, 0.01f);
+		cout << "r:    " << r << "  - |" << r.isOrthogonal() << "|" << endl;
+	}
 
 	return 0;
 }

@@ -1,24 +1,10 @@
 #include <gtest/gtest.h>
-#include <iostream>
 #include <cmath>
 #include "utils/AttitudeMath/matrix33.hpp"
+#include "test_stream_formatters.hpp"
 
 using namespace std;
 using namespace utils::AttitudeMath;
-
-namespace utils::AttitudeMath {
-
-/// @brief Allows gogletest to print vector value
-template<typename T>
-void PrintTo(const Matrix33<T>& m, ostream* os) {
-	*os << endl << "[ "
-		<< m(0,0) << "," << m(0,1) << "," << m(0,2) << ";" << endl << "  "
-		<< m(1,0) << "," << m(1,1) << "," << m(1,2) << ";" << endl << "  "
-		<< m(2,0) << "," << m(2,1) << "," << m(2,2) << ";" << endl
-		<< " ]";
-}
-
-}
 
 namespace unit_tests::utils::AttitudeMath {
 
