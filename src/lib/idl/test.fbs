@@ -1,0 +1,14 @@
+// for further information see: https://flatbuffers.dev/flatbuffers_guide_writing_scema.html
+
+namespace utils.serialization;
+
+struct Vec3 {
+	p: [float64:3];
+}
+
+table TestData {
+	itema: int32;
+	itemb: Vec3;
+}
+
+root_type TestData;
