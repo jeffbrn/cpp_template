@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <cmath>
-#include "utils/AttitudeMath/matrix33.hpp"
+#include "utils/AttitudeMath/dcm.hpp"
 #include "test_stream_formatters.hpp"
 
 using namespace std;
@@ -16,23 +16,23 @@ protected:
 };
 
 TEST_F(DcmTesting, SingleAccessRotations) {
-	float angle_f = 30.f*M_PI/180.f;
-	auto rx = Matrix33<float>::RotationX(angle_f);
+	float angle_f = DCM::DegreesToRadians(30.f);
+	auto rx = DCM::RotationX(angle_f);
 	Matrix33<float> rx_chk {
 		1.f, 0.f, 0.f,
 		0.f, cos(angle_f), 0.5f,
 		0.f, -0.5f, cos(angle_f)
 	};
 	EXPECT_EQ(rx, rx_chk);
-	double angle_d = 30.0*M_PI/180.0;
-	auto ry = Matrix33<double>::RotationY(angle_d);
+	double angle_d = DCM::DegreesToRadians(30.0);
+	auto ry = DCM::RotationY(angle_d);
 	Matrix33<double> ry_chk {
 		  cos(angle_d), 0.0,  -0.5,
 		0.0, 1.0, 0.0,
 		0.5, 0.0, cos(angle_d)
 	};
 	Test_NearEqual(ry, ry_chk);
-	auto rz = Matrix33<float>::RotationZ(angle_f);
+	auto rz = DCM::RotationZ(angle_f);
 	Matrix33<float> rz_chk {
 		cos(angle_f), 0.5f, 0.f,
 		-0.5f, cos(angle_f), 0.f,
@@ -42,14 +42,14 @@ TEST_F(DcmTesting, SingleAccessRotations) {
 }
 
 TEST_F(DcmTesting, Orthoganality) {
-	auto m = Matrix33<float>::RotationX(30.f*M_PI/180.f);
+	auto m = DCM::RotationX(DCM::DegreesToRadians(30.f));
 	EXPECT_TRUE(m.isOrthogonal());
 	auto m_inv = inverse(m);
 	auto m_t = transpose(m);
 	EXPECT_EQ(m_inv, m_t);
 	EXPECT_EQ(m * m_t, Matrix33<float>::Identity());
 
-	auto rot = Matrix33<double>::RotationX(30.0*M_PI/180.0) * Matrix33<double>::RotationY(30.0*M_PI/180.0) * Matrix33<double>::RotationZ(30.0*M_PI/180.0);
+	auto rot = DCM::RotationX(DCM::DegreesToRadians(30.0)) * DCM::RotationY(DCM::DegreesToRadians(30.0)) * DCM::RotationZ(DCM::DegreesToRadians(30.0));
 	Test_NearEqual(inverse(rot), transpose(rot));
 	EXPECT_TRUE(rot.isOrthogonal());
 
@@ -62,8 +62,8 @@ TEST_F(DcmTesting, Orthoganality) {
 }
 
 TEST_F(DcmTesting, Normalize) {
-	auto m1 = Matrix33<float>::RotationX(30.f*M_PI/180.f);
-	Matrix33<float> m2 = m1.normalizeDCM();
+	auto m1 = DCM::RotationX(DCM::DegreesToRadians(30.f));
+	Matrix33<float> m2 = DCM::Normalize(m1);
 	EXPECT_TRUE(m2.isOrthogonal());
 	Test_NearEqual(m1, m2);
 }

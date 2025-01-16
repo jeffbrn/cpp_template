@@ -117,49 +117,8 @@ public:
 		return col1.dot(col2) < eps && col1.dot(col3) < eps && col2.dot(col3) < eps;
 	}
 
-	// DCM Operations
-	Matrix33<T> normalizeDCM() const {
-		auto x = row(0);
-		auto y = row(1);
-		auto error = x.dot(y);
-		auto x_orth = x - (error * y / static_cast<T>(2));
-		auto y_orth = y - (error * x / static_cast<T>(2));
-		auto z_orth = x_orth.cross(y_orth);
-
-		auto x_norm = (static_cast<T>(3) - x_orth.dot(x_orth)) / static_cast<T>(2) * x_orth;
-		auto y_norm = (static_cast<T>(3) - y_orth.dot(y_orth)) / static_cast<T>(2) * y_orth;
-		auto z_norm = (static_cast<T>(3) - z_orth.dot(z_orth)) / static_cast<T>(2) * z_orth;
-
-		return Matrix33<T>(x_norm, y_norm, z_norm).transpose();
-	}
-	Matrix33<T> integrateDCM(const Matrix33<T>& dcm_rates, T dt) const {
-		auto dcm_new = *this + dcm_rates * dt; // 1st order euler integration
-		return dcm_new.normalizeDCM();
-	}
-	Matrix33<T> dcmKinematicRates_BodyRate(const Vector3<T>& body_rates) const {
-		const auto skew = Matrix33<T> {
-			0, -body_rates.z(),body_rates.y(),
-			body_rates.z(), 0, -body_rates.x(),
-			-body_rates.y(), body_rates.x(), 0
-		};
-		return -skew * (*this);
-	}
-	Matrix33<T> dcmKinematicRates_WorldRate(const Vector3<T>& world_rates) const {
-		auto skew = Matrix33<T> {
-			0, -world_rates.z(),world_rates.y(),
-			world_rates.z(), 0, -world_rates.x(),
-			-world_rates.y(), world_rates.x(), 0
-		};
-		return (*this) * skew;
-	}
-
 	// Predefined matrices
 	static Matrix33<T> Identity() { return Matrix33<T> {1,0,0,0,1,0,0,0,1}; }
-
-	// DCMs
-	static Matrix33<T> RotationX(T angle);
-	static Matrix33<T> RotationY(T angle);
-	static Matrix33<T> RotationZ(T angle);
 
 private:
 	// row based element layout
