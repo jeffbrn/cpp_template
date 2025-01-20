@@ -1,4 +1,4 @@
-#include "utils/AttitudeMath/dcm.hpp"
+#include "utils/AttitudeMath/dcm.h"
 
 namespace utils::AttitudeMath::DCM {
 

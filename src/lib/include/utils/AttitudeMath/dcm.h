@@ -1,13 +1,41 @@
 #pragma once
 
 #include "matrix33.hpp"
+//#include <array>
 #include <cmath>
 
 namespace utils::AttitudeMath::DCM {
 
 template<typename T>
 T DegreesToRadians(T deg) {
-	return deg * static_cast<T>(M_PI)/static_cast<T>(180);
+	return deg * static_cast<T>(M_PI) / static_cast<T>(180);
+}
+
+template<typename T>
+T RadiansToDegrees(T radian) {
+	return radian / static_cast<T>(M_PI) * static_cast<T>(180);
+}
+
+template<typename T>
+Vector3<T> DegreesToRadians(Vector3<T> deg) {
+	return Vector3<T>(DegreesToRadians(deg[0]), DegreesToRadians(deg[1]), DegreesToRadians(deg[2]));
+}
+
+template<typename T>
+Vector3<T> RadiansToDegrees(Vector3<T> radian) {
+	return Vector3<T>(RadiansToDegrees(radian[0]), RadiansToDegrees(radian[1]), RadiansToDegrees(radian[2]));
+}
+
+template<typename T>
+Vector3<T> DegreesToRadians(std::initializer_list<T> deg) {
+	if (deg.size() != 3) throw std::invalid_argument("must be 3 elements in list");
+	return Vector3<T>(DegreesToRadians(deg.begin()[0]), DegreesToRadians(deg.begin()[1]), DegreesToRadians(deg.begin()[2]));
+}
+
+template<typename T>
+Vector3<T> RadiansToDegrees(std::initializer_list<T> radian) {
+	if (radian.size() != 3) throw std::invalid_argument("must be 3 elements in list");
+	return Vector3<T>(RadiansToDegrees(radian.begin()[0]), DegreesToRadians(radian.begin()[1]), DegreesToRadians(radian.begin()[2]));
 }
 
 /// @brief Return a rotation matrix for a rotation around the X-Axis

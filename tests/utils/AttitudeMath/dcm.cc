@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <cmath>
-#include "utils/AttitudeMath/dcm.hpp"
+#include "utils/AttitudeMath/dcm.h"
 #include "test_stream_formatters.hpp"
 
 using namespace std;

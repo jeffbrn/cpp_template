@@ -27,10 +27,17 @@ void PrintTo(const Matrix33<T>& m, std::ostream* os) {
 namespace unit_tests::utils::AttitudeMath {
 
 template<typename T>
-void Test_NearEqual(const ::utils::AttitudeMath::Matrix33<T>& lhs, const ::utils::AttitudeMath::Matrix33<T>& rhs) {
+void Test_NearEqual(const ::utils::AttitudeMath::Matrix33<T>& lhs, const ::utils::AttitudeMath::Matrix33<T>& rhs, T diff = std::numeric_limits<T>::epsilon()) {
 	for(int i = 0; i < 9; i++) {
-		EXPECT_NEAR(lhs.data()[i], rhs.data()[i], std::numeric_limits<T>::epsilon()) << "Element " << i << " not equal";
+		EXPECT_NEAR(lhs.data()[i], rhs.data()[i], diff) << "Element " << i << " not equal";
 	}
+}
+
+template<typename T>
+void Test_NearEqual(const ::utils::AttitudeMath::Vector3<T>& lhs, const ::utils::AttitudeMath::Vector3<T>& rhs, T diff = std::numeric_limits<T>::epsilon()) {
+	EXPECT_NEAR(lhs.x(), rhs.x(), diff) << "Element x not equal";
+	EXPECT_NEAR(lhs.y(), rhs.y(), diff) << "Element y not equal";
+	EXPECT_NEAR(lhs.z(), rhs.z(), diff) << "Element z not equal";
 }
 
 }

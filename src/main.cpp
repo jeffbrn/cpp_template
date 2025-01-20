@@ -1,6 +1,6 @@
 #include <iostream>
 #include "utils/AttitudeMath/matrix33.hpp"
-#include "utils/AttitudeMath/dcm.hpp"
+#include "utils/AttitudeMath/dcm.h"
 
 using namespace std;
 using namespace utils::AttitudeMath;
