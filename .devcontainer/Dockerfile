@@ -1,17 +1,4 @@
-FROM ubuntu:24.04 as dev_base
-
-# fix for ubuntu stupidly creating a default user
-RUN touch /var/mail/ubuntu && chown ubuntu /var/mail/ubuntu && userdel -r ubuntu
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt update && apt upgrade -y
-RUN apt install -y apt-utils
-RUN apt install -y build-essential cmake gdb
-RUN apt install -y valgrind
-RUN apt install -y git
-
-FROM dev_base
+FROM ghcr.io/jeffbrn/docker_env/dev_cpp_x86:1.0
 
 ARG USERNAME
 ARG ARG_UID
