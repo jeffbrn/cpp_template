@@ -1,0 +1,24 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jeffbrn/docker_env/dev_cpp_x86:1.0
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: configure
+      run: cmake -B build S .
+    - name: make
+      run: make
+      working-directory: ./build
+    - name: tests
+      run: tests/unit_tests
