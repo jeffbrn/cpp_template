@@ -22,4 +22,4 @@ jobs:
       working-directory: ./build
     - name: tests
       run: tests/unit_tests
-      working-directory: ./build/tests
+      working-directory: ./build
