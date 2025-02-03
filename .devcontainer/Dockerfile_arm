@@ -1,4 +1,4 @@
-FROM ghcr.io/jeffbrn/docker_env/dev_cpp_x86:1.0
+FROM ghcr.io/jeffbrn/docker_env/cpp-dev-arm_64_img:1.0
 
 ARG USERNAME
 ARG ARG_UID

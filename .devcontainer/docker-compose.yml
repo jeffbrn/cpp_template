@@ -1,20 +1,35 @@
 services:
-    cpp-dev-env:
+    cpp-x86-env:
         user: ${USER}
-        container_name: cpp-user-dev
-        image: cpp-user-dev_img
+        container_name: cpp-x86-env
+        image: cpp-x86-env_img
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile_x86
             args:
                 USERNAME: ${USER}
                 ARG_UID: ${USER_UID}
                 ARG_GID: ${USER_GID}
-        network_mode: "host"
         volumes:
             - ..:/workspace
             - ${HOME}/.ssh:/home/${USER}/.ssh:ro
             - ${HOME}/.gitconfig:/home/${USER}/.gitconfig:ro
         command: tail -f /dev/null
-
-# docker exec -it -u ${USER} --workdir /workspace NAME /bin/bash
+    cpp-arm-env:
+        user: ${USER}
+        container_name: cpp-arm-env
+        image: cpp-arm-env_img
+        build:
+            context: .
+            dockerfile: Dockerfile_arm
+            #platform: linux/arm64
+            args:
+                USERNAME: ${USER}
+                ARG_UID: ${USER_UID}
+                ARG_GID: ${USER_GID}
+        volumes:
+            - ..:/workspace
+            - ${HOME}/.ssh:/home/${USER}/.ssh:ro
+            - ${HOME}/.gitconfig:/home/${USER}/.gitconfig:ro
+        platform: linux/arm64
+        command: tail -f /dev/null
