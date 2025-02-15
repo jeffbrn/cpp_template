@@ -52,11 +52,28 @@ void TcpListener::set_msg_handler(std::function<std::pair<const uint8_t*, size_t
 	_msg_handler = std::move(msg_handler);
 }
 
+bool TcpListener::is_listening() const {
+	return _listening;
+}
+
+void TcpListener::wait_for_listening() {
+	unique_lock<std::mutex> lck(_mtx);
+	_logger->debug("SERVER: waiting for listening");
+	_cv.wait(lck, [this] () { return _listening; });
+	_logger->debug("SERVER: is up and running");
+}
+
 void TcpListener::handler() {
 	using namespace std::chrono_literals;
 
 	if (_skt_fd == -1) return;
 	listen(_skt_fd, 0);
+	_logger->info("SERVER: ready to accept connections, signalling waiters");
+	{
+		std::unique_lock<std::mutex> lck(_mtx);
+		_listening = true;
+	}
+	_cv.notify_all();
 	while (_running) {
 		sockaddr_in client_addr {};
 		socklen_t addr_len = sizeof(client_addr);

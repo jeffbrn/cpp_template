@@ -14,6 +14,7 @@ if (NOT flatbuffers_FOUND)
 	include(FetchContent)
 	FetchContent_Declare(
 		flatbuffers
+		DOWNLOAD_EXTRACT_TIMESTAMP true
 		URL "https://github.com/google/flatbuffers/archive/refs/tags/v${FLATC_VERSION}.tar.gz"
 	)
 	FetchContent_MakeAvailable(flatbuffers)

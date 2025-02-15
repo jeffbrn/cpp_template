@@ -73,13 +73,13 @@ std::pair<const uint8_t*, size_t> svr_handler_send_rcv(const uint8_t *buff, size
 
 TEST_F(NetworkTesting, ListenerStartupShutdown) {
 	TcpListener svr(_log.get(), _test_port);
-	this_thread::sleep_for(1000ms);
+	svr.wait_for_listening();
 }
 
 TEST_F(NetworkTesting, ClientSendSmallData) {
 	TcpListener svr(_log.get(), _test_port);
 	svr.set_msg_handler(&svr_handler_only_rcv);
-	this_thread::sleep_for(10ms);
+	svr.wait_for_listening();
 	TcpClient client(_log.get(), "localhost", _test_port);
 	EXPECT_TRUE(client.is_valid());
 	this->send_len = 10;
@@ -94,7 +94,7 @@ TEST_F(NetworkTesting, ClientSendMaxData) {
 	uint32_t buff_len = 4*1024*1024;
 	TcpListener svr(_log.get(), _test_port, buff_len);
 	svr.set_msg_handler(&svr_handler_only_rcv);
-	this_thread::sleep_for(10ms);
+	svr.wait_for_listening();
 	TcpClient client(_log.get(), "127.0.0.1", _test_port);
 	EXPECT_TRUE(client.is_valid());
 	this->send_len = buff_len;
@@ -108,7 +108,7 @@ TEST_F(NetworkTesting, ClientSendMaxData) {
 TEST_F(NetworkTesting, ClientOnlyRecvData) {
 	TcpListener svr(_log.get(), _test_port);
 	svr.set_msg_handler(&svr_handler_only_snd);
-	this_thread::sleep_for(10ms);
+	svr.wait_for_listening();
 	TcpClient client(_log.get(), "localhost", _test_port);
 	EXPECT_TRUE(client.is_valid());
 	this->send_len = 10;
@@ -122,7 +122,7 @@ TEST_F(NetworkTesting, ClientOnlyRecvData) {
 TEST_F(NetworkTesting, ClientSendAndRecvData) {
 	TcpListener svr(_log.get(), _test_port);
 	svr.set_msg_handler(&svr_handler_send_rcv);
-	this_thread::sleep_for(10ms);
+	svr.wait_for_listening();
 	TcpClient client(_log.get(), "localhost", _test_port);
 	EXPECT_TRUE(client.is_valid());
 	this->send_len = 10;
@@ -156,6 +156,7 @@ TEST_F(NetworkTesting, ClientBadAddress) {
 
 TEST_F(NetworkTesting, ClientBadSendBufferLen) {
 	TcpListener svr(_log.get(), _test_port);
+	svr.wait_for_listening();
 	TcpClient client(_log.get(), "localhost", _test_port);
 	EXPECT_TRUE(client.is_valid());
 	auto [success, recv_len] = client.send(nullptr, 10, nullptr, 0);
@@ -165,6 +166,8 @@ TEST_F(NetworkTesting, ClientBadSendBufferLen) {
 
 TEST_F(NetworkTesting, ClientBadRecvBufferLen) {
 	TcpListener svr(_log.get(), _test_port);
+	svr.wait_for_listening();
+	
 	TcpClient client(_log.get(), "localhost", _test_port);
 	EXPECT_TRUE(client.is_valid());
 	this->send_len = 10;

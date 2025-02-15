@@ -7,6 +7,7 @@
 #include <thread>
 #include <memory>
 #include <atomic>
+#include <condition_variable>
 #include "network_base.hpp"
 
 namespace utils::network {
@@ -23,6 +24,8 @@ public:
 	/// @brief sets the callback function to handle incoming messages
 	/// @param pointer to the message hadnler
 	void set_msg_handler(std::function<std::pair<const uint8_t*, size_t>(const uint8_t*, size_t)>);
+	bool is_listening() const;
+	void wait_for_listening();
 
 private:
 	int _skt_fd {-1};
@@ -31,6 +34,9 @@ private:
 	std::atomic<bool> _running {false}; // flag to stop the thread
 	uint32_t _buff_len {0};
 	std::unique_ptr<uint8_t[]> _buff;
+	bool _listening {false};
+	std::mutex _mtx;
+	std::condition_variable _cv;
 
 	/// @brief this is the thread function that listens for incoming messages
 	void handler();
