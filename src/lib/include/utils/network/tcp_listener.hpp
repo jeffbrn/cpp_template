@@ -34,6 +34,7 @@ private:
 	std::atomic<bool> _running {false}; // flag to stop the thread
 	uint32_t _buff_len {0};
 	std::unique_ptr<uint8_t[]> _buff;
+	// support to indicate when the listener is ready to receive messages
 	bool _listening {false};
 	std::mutex _mtx;
 	std::condition_variable _cv;

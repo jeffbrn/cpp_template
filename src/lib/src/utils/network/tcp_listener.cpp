@@ -12,7 +12,7 @@ namespace utils::network {
 TcpListener::TcpListener(log::ILogger *log, uint16_t port, uint32_t buffer_size) : NetworkBase(log),
 	_port(port), _buff_len(buffer_size), _buff(make_unique<uint8_t[]>(buffer_size))
 {
-	sockaddr_in svr_addr {};
+	sockaddr_in svr_addr {0};
 	svr_addr.sin_family = AF_INET;
 	svr_addr.sin_addr.s_addr = INADDR_ANY;
 	svr_addr.sin_port = htons(port);
