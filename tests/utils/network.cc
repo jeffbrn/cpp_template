@@ -10,6 +10,8 @@
 using namespace std;
 using namespace utils::network;
 
+//#define SHOW_LOGS 1
+
 namespace unit_tests::utils::network {
 
 class NetworkTesting;
@@ -150,8 +152,7 @@ TEST_F(NetworkTesting, ClientSvrNotListening) {
 }
 
 TEST_F(NetworkTesting, ClientBadAddress) {
-	TcpClient client(_log.get(), "555.0.0.1", _test_port);
-	EXPECT_FALSE(client.is_valid());
+	EXPECT_THROW(TcpClient client(_log.get(), "555.0.0.1", _test_port), std::runtime_error);
 }
 
 TEST_F(NetworkTesting, ClientBadSendBufferLen) {

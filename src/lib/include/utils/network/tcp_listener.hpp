@@ -8,11 +8,11 @@
 #include <memory>
 #include <atomic>
 #include <condition_variable>
-#include "network_base.hpp"
+#include "tcp_base.hpp"
 
 namespace utils::network {
 
-class TcpListener : public NetworkBase {
+class TcpListener : public TcpBase {
 public:
 	/// @brief @ctor sets up a socket to listen for incoming messages
 	/// @param log logger to use for class status messages

@@ -9,7 +9,7 @@ using namespace std;
 
 namespace utils::network {
 
-TcpListener::TcpListener(log::ILogger *log, uint16_t port, uint32_t buffer_size) : NetworkBase(log),
+TcpListener::TcpListener(log::ILogger *log, uint16_t port, uint32_t buffer_size) : TcpBase(log),
 	_port(port), _buff_len(buffer_size), _buff(make_unique<uint8_t[]>(buffer_size))
 {
 	sockaddr_in svr_addr {0};
@@ -87,7 +87,7 @@ void TcpListener::handler() {
 
 		while (true) {
 			_logger->debug("SERVER: waiting for client message");
-			ssize_t bytes_read = NetworkBase::recv_msg(client_skt, _buff.get(), _buff_len);
+			ssize_t bytes_read = TcpBase::recv_msg(client_skt, _buff.get(), _buff_len);
 			if (bytes_read < 0) {
 				// client disconnected
 				break;
@@ -96,10 +96,10 @@ void TcpListener::handler() {
 				//send message to the handler and get response if any
 				auto [send_buff, send_len] = _msg_handler(_buff.get(), bytes_read);
 				_logger->debug("SERVER: sending %d bytes", send_len);
-				NetworkBase::send_msg(client_skt, send_buff, send_len);
+				TcpBase::send_msg(client_skt, send_buff, send_len);
 			} else {
 				_logger->warn("SERVER: no message handler set, sending empty response");
-				NetworkBase::send_msg(client_skt, nullptr, 0);
+				TcpBase::send_msg(client_skt, nullptr, 0);
 			}
 		}
 		_logger->info("SERVER: client disconnected");

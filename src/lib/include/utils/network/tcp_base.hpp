@@ -7,9 +7,9 @@
 
 namespace utils::network {
 
-class NetworkBase {
+class TcpBase {
 protected:
-	NetworkBase(log::ILogger *log) : _logger(log) {
+	TcpBase(log::ILogger *log) : _logger(log) {
 		if (_logger == nullptr) {
 			throw std::invalid_argument("logger cannot be null");
 		}

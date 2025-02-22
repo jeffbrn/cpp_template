@@ -2,12 +2,13 @@
 
 #include <string>
 #include <utility>
-#include "network_base.hpp"
+#include "tcp_base.hpp"
+#include "netbase.hpp"
 
 namespace utils::network {
 
 /// @brief connects to a TCP server to send and receive data. msg format is 4 bytes for message length in bytes then the message in bytes
-class TcpClient : public NetworkBase {
+class TcpClient : public TcpBase, public NetworkBase {
 public:
 	/// @brief @ctor sets up a TCP connection to the server to send and receive messages
 	/// @param log logger to use for class status messages
@@ -30,7 +31,6 @@ public:
 
 private:
 	bool _valid {false};
-	int _skt_fd {-1};
 };
 
 }

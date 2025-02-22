@@ -1,11 +1,11 @@
-#include "utils/network/network_base.hpp"
+#include "utils/network/tcp_base.hpp"
 #include <arpa/inet.h>
 
 using namespace std;
 
 namespace utils::network {
 
-bool NetworkBase::send_msg(int skt, const uint8_t *msg_buff, uint32_t msg_len) {
+bool TcpBase::send_msg(int skt, const uint8_t *msg_buff, uint32_t msg_len) {
 	if (msg_buff == nullptr && msg_len > 0) {
 		_logger->error("SEND_MSG: invalid message length");
 		return false;
@@ -38,7 +38,7 @@ bool NetworkBase::send_msg(int skt, const uint8_t *msg_buff, uint32_t msg_len) {
 	return true;
 }
 
-ssize_t NetworkBase::recv_msg(int skt, uint8_t *rcv_buff, uint32_t buff_len) {
+ssize_t TcpBase::recv_msg(int skt, uint8_t *rcv_buff, uint32_t buff_len) {
 	if (rcv_buff == nullptr && buff_len > 0) {
 		_logger->error("RECV_MSG: invalid buffer length");
 		return -1;
