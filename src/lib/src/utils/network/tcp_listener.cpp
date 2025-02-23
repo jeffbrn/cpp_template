@@ -1,39 +1,16 @@
 #include "utils/network/tcp_listener.hpp"
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <iostream>
 
 using namespace std;
 
 namespace utils::network {
 
-TcpListener::TcpListener(log::ILogger *log, uint16_t port, uint32_t buffer_size) : TcpBase(log),
+TcpListener::TcpListener(log::ILogger *log, uint16_t port, uint32_t buffer_size) : TcpBase(log), NetworkBase(log),
 	_port(port), _buff_len(buffer_size), _buff(make_unique<uint8_t[]>(buffer_size))
 {
-	sockaddr_in svr_addr {0};
-	svr_addr.sin_family = AF_INET;
-	svr_addr.sin_addr.s_addr = INADDR_ANY;
-	svr_addr.sin_port = htons(port);
-	_skt_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_skt_fd == -1) {
-		_logger->error("SERVER: failed to create socket");
-		throw runtime_error("failed to create socket");
+	if (!setup_server_socket(SOCK_STREAM, port)) {
+		throw runtime_error("failed to setup socket");
 	}
-
-	if (bind(_skt_fd, reinterpret_cast<const sockaddr*>(&svr_addr), sizeof(svr_addr)) < 0) {
-		_logger->error("SERVER: failed to create bind socket to port");
-		throw runtime_error("failed to bind socket to port");
-	}
-
-	int flags = fcntl(_skt_fd, F_GETFL, 0);
-	auto result = fcntl(_skt_fd, F_SETFL, flags | O_NONBLOCK);
-	if (result) {
-		_logger->error("SERVER: failed to set socket properties");
-		throw runtime_error("failed to set socket properties");
-	}
-
 	_running = true;
 	_thrd = std::move(thread(&TcpListener::handler, this));
 }
@@ -45,7 +22,7 @@ TcpListener::~TcpListener() {
 		_thrd.join();
 	}
 	// close the socket
-	close(_skt_fd);
+	close_socket();
 }
 
 void TcpListener::set_msg_handler(std::function<std::pair<const uint8_t*, size_t>(const uint8_t*, size_t)> msg_handler) {
@@ -66,8 +43,8 @@ void TcpListener::wait_for_listening() {
 void TcpListener::handler() {
 	using namespace std::chrono_literals;
 
-	if (_skt_fd == -1) return;
-	listen(_skt_fd, 0);
+	if (get_skt_fd() == -1) return;
+	listen(get_skt_fd(), 0);
 	_logger->info("SERVER: ready to accept connections, signalling waiters");
 	{
 		std::unique_lock<std::mutex> lck(_mtx);
@@ -79,7 +56,7 @@ void TcpListener::handler() {
 		socklen_t addr_len = sizeof(client_addr);
 		int client_skt = -1;
 		// busy wait for incoming connection
-		while ((client_skt = accept(_skt_fd, reinterpret_cast<sockaddr*>(&client_addr), &addr_len)) < 0) {
+		while ((client_skt = accept(get_skt_fd(), reinterpret_cast<sockaddr*>(&client_addr), &addr_len)) < 0) {
 			this_thread::sleep_for(50ms);
 			if (!_running) goto EXIT_THREAD; // signalled to stop
 		}

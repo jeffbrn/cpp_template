@@ -1,7 +1,4 @@
 #include "utils/network/tcp_client.hpp"
-#include <netdb.h>
-#include <sys/socket.h>
-#include <iostream>
 
 using namespace std;
 
@@ -11,7 +8,7 @@ TcpClient::TcpClient(log::ILogger *log, std::string ip_addr, uint16_t port) : Tc
 	_logger->debug("CLIENT: connecting to %s:%d", ip_addr.c_str(), port);
 	// convert server address to an IPV4 address
 	AddressInfo svr_addr(ip_addr, port);
-	if (!setup_socket(svr_addr)) {
+	if (!setup_client_socket(svr_addr)) {
 		_logger->error("CLIENT: failed to setup socket");
 		return;
 	}

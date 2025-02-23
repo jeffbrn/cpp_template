@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-#include <cstdint>
 #include <functional>
 #include <utility>
 #include <thread>
@@ -9,10 +7,11 @@
 #include <atomic>
 #include <condition_variable>
 #include "tcp_base.hpp"
+#include "netbase.hpp"
 
 namespace utils::network {
 
-class TcpListener : public TcpBase {
+class TcpListener : public TcpBase, public NetworkBase {
 public:
 	/// @brief @ctor sets up a socket to listen for incoming messages
 	/// @param log logger to use for class status messages
@@ -28,7 +27,6 @@ public:
 	void wait_for_listening();
 
 private:
-	int _skt_fd {-1};
 	uint16_t _port;
 	std::thread _thrd;
 	std::atomic<bool> _running {false}; // flag to stop the thread
