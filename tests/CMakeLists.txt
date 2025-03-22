@@ -15,6 +15,7 @@ add_executable(unit_tests
 target_include_directories(unit_tests PRIVATE include)
 target_link_libraries(unit_tests PRIVATE
 	template_lib
+	gtest
 	gtest_main
 )
 

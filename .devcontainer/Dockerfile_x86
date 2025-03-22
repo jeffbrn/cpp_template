@@ -4,6 +4,33 @@ ARG USERNAME
 ARG ARG_UID
 ARG ARG_GID
 
+# Install project dependencies
+WORKDIR /build
+RUN apt-get update &&apt-get -y upgrade
+RUN wget https://gitlab.com/libeigen/eigen/-/archive/3.4/eigen-3.4.tar.gz
+RUN tar -xzf eigen-3.4.tar.gz
+WORKDIR /build/eigen-3.4
+RUN cmake -B build -S .
+WORKDIR /build/eigen-3.4/build
+RUN make && make install
+WORKDIR /build
+RUN wget https://github.com/google/flatbuffers/archive/refs/tags/v23.5.26.tar.gz
+RUN tar -xvzf v23.5.26.tar.gz
+WORKDIR /build/flatbuffers-23.5.26
+RUN cmake -B build -S .
+WORKDIR /build/flatbuffers-23.5.26/build
+RUN make && make install
+WORKDIR /build
+RUN wget https://github.com/google/googletest/releases/download/v1.15.2/googletest-1.15.2.tar.gz
+RUN tar -xvzf googletest-1.15.2.tar.gz
+WORKDIR /build/googletest-1.15.2
+RUN cmake -B build -S .
+WORKDIR /build/googletest-1.15.2/build
+RUN make && make install
+WORKDIR /
+RUN rm -rf /build
+
+
 # Add host user to the container so that file permissions are correct
 RUN groupadd -o --gid $ARG_GID $USERNAME \
     && useradd -l -s /bin/bash --uid $ARG_UID --gid $ARG_GID -m $USERNAME \
