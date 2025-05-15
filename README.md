@@ -40,24 +40,29 @@ This template has been tested with the following toolchain:
 
 ## Build Instructions
 
+Build is done via presets, you can list them by:
+
+```
+cmake --list-presets
+```
+
+For a clean release build
+
 ```bash
-cmake -B build -S .
-cd build
-make
+rm -rf build && cmake --preset=release && cmake --build build -j
 ```
 
 ## Unit Tests
 
-Tests are built automatically and can be run from the **build** directory by:
+To build and run the units tests use the test default
 
 ```bash
-tests/unit_tests
+rm -rf build && cmake --preset=default-with-tests && cmake --build build -j
+cd build && ./unit_tests
 ```
 
-You can prevent the tests being built by passing in the cmake parameter **-DBUILD_TESTS=OFF**:
+You can build the tests for release by overriding the preset settings:
 
-```bash
-cmake -B build -S . -DBUILD_TESTS=OFF
-cd build
-make
+```
+rm -rf build && cmake --preset=default-with-tests -CMAKE_BUILD_TYPE=Release && cmake --build build -j
 ```

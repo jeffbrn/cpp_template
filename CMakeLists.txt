@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Project Options
-option(BUILD_TESTS "BUILD_TESTS Enables building the unit test code for this project" ON)
+option(BUILD_TESTS "BUILD_TESTS Enables building the unit test code for this project" OFF)
 
 include(${CMAKE_MODULE_PATH}/utils/debugging.cmake)
 
